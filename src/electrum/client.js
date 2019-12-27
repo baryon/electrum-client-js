@@ -8,7 +8,7 @@ class ElectrumClient extends SocketClient {
     super(host, port, protocol, options)
   }
 
-  async connect(clientName, electrumProtocolVersion, persistencePolicy = {maxRetry: 10, callback: null}) {
+  async connect (clientName, electrumProtocolVersion, persistencePolicy = { maxRetry: 10, callback: null }) {
     this.persistencePolicy = persistencePolicy
 
     this.timeLastCall = 0
@@ -35,7 +35,7 @@ class ElectrumClient extends SocketClient {
     }
   }
 
-  async request(method, params) {
+  async request (method, params) {
     if (this.status === 0) {
       throw new Error('connection not established')
     }
@@ -61,7 +61,7 @@ class ElectrumClient extends SocketClient {
    * minutes. It sends a ping request every 2 minutes. If the request fails it
    * logs an error and closes the connection.
    */
-  async keepAlive() {
+  async keepAlive () {
     if (this.status !== 0) {
       this.keepAliveHandle = setInterval(
         async (client) => {
@@ -80,11 +80,11 @@ class ElectrumClient extends SocketClient {
     }
   }
 
-  close() {
+  close () {
     return super.close()
   }
 
-  onClose() {
+  onClose () {
     super.onClose()
 
     const list = [
@@ -121,103 +121,100 @@ class ElectrumClient extends SocketClient {
   // Documentation:
   // https://electrumx.readthedocs.io/en/latest/protocol-methods.html
   //
-  server_version(client_name, protocol_version) {
+  server_version (client_name, protocol_version) {
     return this.request('server.version', [client_name, protocol_version])
   }
-  server_banner() {
+  server_banner () {
     return this.request('server.banner', [])
   }
-  server_ping() {
+  server_ping () {
     return this.request('server.ping', [])
   }
-  server_addPeer(features) {
+  server_addPeer (features) {
     return this.request('server.add_peer', [features])
   }
-  server_donation_address() {
+  server_donation_address () {
     return this.request('server.donation_address', [])
   }
-  server_features() {
+  server_features () {
     return this.request('server.features', [])
   }
-  server_peers_subscribe() {
+  server_peers_subscribe () {
     return this.request('server.peers.subscribe', [])
   }
-  blockchain_address_getProof(address) {
-    return this.request('blockchain.address.get_proof', [address])
-  }
-  blockchain_scripthash_getBalance(scripthash) {
+  blockchain_scripthash_getBalance (scripthash) {
     return this.request('blockchain.scripthash.get_balance', [scripthash])
   }
-  blockchain_scripthash_getHistory(scripthash) {
+  blockchain_scripthash_getHistory (scripthash) {
     return this.request('blockchain.scripthash.get_history', [scripthash])
   }
-  blockchain_scripthash_getMempool(scripthash) {
+  blockchain_scripthash_getMempool (scripthash) {
     return this.request('blockchain.scripthash.get_mempool', [scripthash])
   }
-  blockchain_scripthash_listunspent(scripthash) {
+  blockchain_scripthash_listunspent (scripthash) {
     return this.request('blockchain.scripthash.listunspent', [scripthash])
   }
-  blockchain_scripthash_subscribe(scripthash) {
+  blockchain_scripthash_subscribe (scripthash) {
     return this.request('blockchain.scripthash.subscribe', [scripthash])
   }
-  blockchain_scripthash_unsubscribe(scripthash) {
+  blockchain_scripthash_unsubscribe (scripthash) {
     return this.request('blockchain.scripthash.unsubscribe', [scripthash])
   }
-  blockchain_block_header(height, cpHeight = 0) {
+  blockchain_block_header (height, cpHeight = 0) {
     return this.request('blockchain.block.header', [height, cpHeight])
   }
-  blockchain_block_headers(startHeight, count, cpHeight = 0) {
+  blockchain_block_headers (startHeight, count, cpHeight = 0) {
     return this.request('blockchain.block.headers', [startHeight, count, cpHeight])
   }
-  blockchainEstimatefee(number) {
+  blockchainEstimatefee (number) {
     return this.request('blockchain.estimatefee', [number])
   }
-  blockchain_headers_subscribe() {
+  blockchain_headers_subscribe () {
     return this.request('blockchain.headers.subscribe', [])
   }
-  blockchain_relayfee() {
+  blockchain_relayfee () {
     return this.request('blockchain.relayfee', [])
   }
-  blockchain_transaction_broadcast(rawtx) {
+  blockchain_transaction_broadcast (rawtx) {
     return this.request('blockchain.transaction.broadcast', [rawtx])
   }
-  blockchain_transaction_get(tx_hash, verbose) {
+  blockchain_transaction_get (tx_hash, verbose) {
     return this.request('blockchain.transaction.get', [tx_hash, verbose ? verbose : false])
   }
-  blockchain_transaction_getMerkle(tx_hash, height) {
+  blockchain_transaction_getMerkle (tx_hash, height) {
     return this.request('blockchain.transaction.get_merkle', [tx_hash, height])
   }
-  mempool_getFeeHistogram() {
+  mempool_getFeeHistogram () {
     return this.request('mempool.get_fee_histogram', [])
   }
   // ---------------------------------
   // protocol 1.1 deprecated method
   // ---------------------------------
-  blockchain_utxo_getAddress(tx_hash, index) {
+  blockchain_utxo_getAddress (tx_hash, index) {
     return this.request('blockchain.utxo.get_address', [tx_hash, index])
   }
-  blockchain_numblocks_subscribe() {
+  blockchain_numblocks_subscribe () {
     return this.request('blockchain.numblocks.subscribe', [])
   }
   // ---------------------------------
   // protocol 1.2 deprecated method
   // ---------------------------------
-  blockchain_block_getChunk(index) {
+  blockchain_block_getChunk (index) {
     return this.request('blockchain.block.get_chunk', [index])
   }
-  blockchain_address_getBalance(address) {
+  blockchain_address_getBalance (address) {
     return this.request('blockchain.address.get_balance', [address])
   }
-  blockchain_address_getHistory(address) {
+  blockchain_address_getHistory (address) {
     return this.request('blockchain.address.get_history', [address])
   }
-  blockchain_address_getMempool(address) {
+  blockchain_address_getMempool (address) {
     return this.request('blockchain.address.get_mempool', [address])
   }
-  blockchain_address_listunspent(address) {
+  blockchain_address_listunspent (address) {
     return this.request('blockchain.address.listunspent', [address])
   }
-  blockchain_address_subscribe(address) {
+  blockchain_address_subscribe (address) {
     return this.request('blockchain.address.subscribe', [address])
   }
 }
