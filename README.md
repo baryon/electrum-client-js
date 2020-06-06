@@ -1,61 +1,26 @@
-# electrum-client-js
+# rn-electrum-client
 
-JavaScript implementation of [Electrum Protocol] Client.
+Electrum Protocol Client for React Native
 
-This is a library that can communicate with the [ElectrumX Server]
-on `tcp`, `ssl`, `ws` and `wss` protocols. 
+# based on
 
-Works in node.js and browser.
+* https://github.com/you21979/node-electrum-client
+* https://github.com/7kharov/node-electrum-client
 
-Implements methods described in [Electrum Protocol methods] documentation.
+# features
 
-Subscriptions and notifications are also supported, please see [example](example/subscribe.js).
+* persistence (ping strategy and reconnection)
+* batch requests
+* works in RN and nodejs
 
-## Continuous Integration
+## protocol spec
 
-Latest [CircleCI](.circleci/) build status:
+* https://electrumx.readthedocs.io/en/latest/PROTOCOL.html
 
-[![CircleCI build status](https://circleci.com/gh/nkuba/electrum-client-js.svg?style=svg)](https://circleci.com/gh/nkuba/electrum-client-js)
-
-
-## Install
+## usage
 
 ```
-npm install --save nkuba/electrum-client-js
+npm install --save @photon-sdk/rn-electrum-client
 ```
 
-## Usage
-
-```js
-const ElectrumClient = require('electrum-client-js')
-
-async function main() {
-  const client = new ElectrumClient(
-    'fortress.qtornado.com',
-    50002,
-    'ssl'
-  )
-
-  try {
-    await client.connect(
-      'electrum-client-js', // optional client name
-      '1.4.2' // optional protocol version
-    )
-
-    const header = await client.blockchain_headers_subscribe()
-    console.log('Current header:', header)
-
-    await client.close()
-  } catch (err) {
-    console.error(err)
-  }
-}
-
-main()
-```
-See more [examples](example/).
-
-
-[Electrum Protocol]: https://electrumx.readthedocs.io/en/latest/protocol.html
-[Electrum Protocol methods]: https://electrumx.readthedocs.io/en/latest/protocol-methods.html
-[ElectrumX Server]: https://electrumx.readthedocs.io/en/latest/
+Relies on `@photon-sdk/react-native-tcp` so it should be already installed and linked in RN project.

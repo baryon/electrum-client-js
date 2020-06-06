@@ -1,31 +1,26 @@
 {
-  "name": "electrum-client-js",
-  "version": "0.1.0",
-  "description": "Electrum protocol client for node.js and browser",
+  "name": "@photon-sdk/rn-electrum-client",
+  "version": "3.0.0",
+  "description": "Electrum protocol client for React Native & Node.js",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --timeout 10000",
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix ."
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "dependencies": {
-    "websocket": "^1.0.29"
+  "dependencies": {},
+  "devDependencies": {},
+  "peerDependencies": {
+    "@photon-sdk/react-native-tcp": "^6.0.0"
   },
-  "devDependencies": {
-    "chai": "^4.2.0",
-    "electrum-host-parse": "^0.1.1",
-    "eslint": "^6.1.0",
-    "eslint-config-google": "^0.13.0",
-    "fs": "0.0.1-security",
-    "mocha": "^6.2.0"
+  "react-native": {
+    "net": "@photon-sdk/react-native-tcp",
+    "tls": "@photon-sdk/react-native-tcp/tls"
   },
-  "homepage": "https://github.com/nkuba/electrum-client-js#readme",
   "repository": {
     "type": "git",
-    "url": "git://github.com/nkuba/electrum-client-js.git"
+    "url": "git://github.com/photon-sdk/rn-electrum-client.git"
   },
   "bugs": {
-    "url": "https://github.com/nkuba/electrum-client-js/issues"
+    "url": "https://github.com/photon-sdk/rn-electrum-client/issues"
   },
   "keywords": [
     "client",
@@ -35,6 +30,16 @@
   "engines": {
     "node": ">=6"
   },
-  "author": "Yuki Akiyama",
+  "contributors": [
+    {
+      "name": "Yuki Akiyama"
+    },
+    {
+      "name": "7kharov"
+    },
+    {
+      "name": "overtorment"
+    }
+  ],
   "license": "MIT"
 }
