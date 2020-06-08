@@ -1,17 +1,18 @@
-# rn-electrum-client
+# electrum-client-js
 
-Electrum Protocol Client for React Native
+Electrum Protocol Client for Bitcoin BSV
 
 # based on
 
 * https://github.com/you21979/node-electrum-client
 * https://github.com/7kharov/node-electrum-client
+* https://github.com/photon-sdk/rn-electrum-client
 
 # features
 
 * persistence (ping strategy and reconnection)
 * batch requests
-* works in RN and nodejs
+* works in nodejs
 
 ## protocol spec
 
@@ -20,7 +21,5 @@ Electrum Protocol Client for React Native
 ## usage
 
 ```
-npm install --save @photon-sdk/rn-electrum-client
 ```
 
-Relies on `@photon-sdk/react-native-tcp` so it should be already installed and linked in RN project.
