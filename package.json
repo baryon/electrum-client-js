@@ -8,21 +8,22 @@
     "index.js"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test/*.test.js"
   },
   "dependencies": {
+    "eventemitter3": "^4.0.7"
   },
   "devDependencies": {
-    "bsv": "^1.5.3",
+    "bsv": "^1.5.4",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "eslint": "^6.8.0",
-    "eslint-plugin-babel": "^5.3.0",
-    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-babel": "^5.3.1",
+    "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-mocha": "^6.3.0",
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.1",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.20",
     "mocha": "^7.2.0"
   },
   "peerDependencies": {},
@@ -43,6 +44,12 @@
     },
     {
       "name": "overtorment"
+    },
+    {
+      "name": "keep-network"
+    },
+    {
+      "name": "baryon"
     }
   ],
   "license": "MIT"

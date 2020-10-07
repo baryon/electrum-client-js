@@ -1,59 +1,61 @@
-const { mapAddressToScriptHash }  = require( './address')
+const { mapAddressToScriptHash } = require( './address' )
 const ElectrumPool = require( './pool' )
 
-require('mocha')
-const assert = require('chai').assert
+require( 'mocha' )
+const assert = require( 'chai' ).assert
 
-describe('ElectrumClient', async () => {
-  beforeEach(async () => {
+const sleep = ( ms ) => new Promise( ( resolve, _ ) => setTimeout( () => resolve(), ms ) )
 
-  })
-  it('init', async () => {
+describe( 'ElectrumClient', async () => {
+  beforeEach( async () => {
+
+  } )
+  it( 'init', async () => {
     const electrum = new ElectrumPool()
     const ecl = await electrum.acquire()
     const banner = await ecl.server_banner()
-    console.log(banner)
-    assert.isObject(ecl)
-  })
+    console.log( banner )
+    assert.isObject( ecl )
+  } )
 
-  it('Ecl Balance', async () => {
+  it( 'Ecl Balance', async () => {
     const electrum = new ElectrumPool()
     const ecl = await electrum.acquire()
-    const addressStr = '1Pwmd4RCoTbYP6tLWVoDcys1GW5chsve8C'// '1JQtjapAbhUVdBBFH1Z7dsE8gGgnxVDxRH'
+    const address = '1Pwmd4RCoTbYP6tLWVoDcys1GW5chsve8C' //'1JQtjapAbhUVdBBFH1Z7dsE8gGgnxVDxRH'
     try {
-      const [, scriptHash] = mapAddressToScriptHash(addressStr)
+      const { scriptHash } = mapAddressToScriptHash( address )
       const balance = await ecl.blockchainScripthash_getBalance( scriptHash )
-      console.log(balance)
-    } catch (e) {
-      console.debug(e)
+      console.log( balance )
+    } catch ( e ) {
+      console.debug( e )
     }
 
-    assert.isObject(ecl)
-  })
+    assert.isObject( ecl )
+  } )
 
-  it('fetchHistories', async () => {
+  it( 'fetchHistories', async () => {
     const electrum = new ElectrumPool()
     const ecl = await electrum.acquire()
     const addressStr = '1JQtjapAbhUVdBBFH1Z7dsE8gGgnxVDxRH'// '1LoqTWSXrd7D5yv8vKfk5onnFuVJbph74n' //
     try {
-      const [, scriptHash] = mapAddressToScriptHash(addressStr)
+      const { scriptHash } = mapAddressToScriptHash( addressStr )
       const histories = await ecl.blockchainScripthash_getHistory( scriptHash )
-      console.log(histories.length, histories)
-    } catch (e) {
-      console.debug(e)
+      console.log( histories.length, histories )
+    } catch ( e ) {
+      console.debug( e )
     }
 
-    assert.isObject(ecl)
-  }).timeout(1500000)
+    assert.isObject( ecl )
+  } ).timeout( 1500000 )
 
-  it('fetchRawTx', async () => {
+  it( 'fetchRawTx', async () => {
     const electrum = new ElectrumPool()
     const ecl = await electrum.acquire()
     const txHash = 'a3d9bb5a9d26c15fa5356fe6ea555e7ae4a7262bee485464c9625a0e64028c7f'
-    const txObject = await ecl.blockchainTransaction_get(txHash)
-    console.log(txObject)
-    assert.isString(txObject)
-  }).timeout(1500000)
+    const txObject = await ecl.blockchainTransaction_get( txHash )
+    console.log( txObject )
+    assert.isString( txObject )
+  } ).timeout( 1500000 )
 
   // it('broadcast', async () => {
   //   const electrum = new ElectrumPool()
@@ -64,7 +66,7 @@ describe('ElectrumClient', async () => {
   //   assert.isString(hash)
   // })
 
-  it('selectUtxos', async () => {
+  it( 'selectUtxos', async () => {
     const electrum = new ElectrumPool()
     const ecl = await electrum.acquire()
 
@@ -73,9 +75,9 @@ describe('ElectrumClient', async () => {
     const amount = 123045
     const addressStr = '1Pwmd4RCoTbYP6tLWVoDcys1GW5chsve8C'// '1JQtjapAbhUVdBBFH1Z7dsE8gGgnxVDxRH'
 
-    const addressList = [addressStr]
-    for (const addressStr of addressList) {
-      const [scriptHex, scriptHash] = mapAddressToScriptHash(addressStr)
+    const addressList = [ addressStr ]
+    for ( const addressStr of addressList ) {
+      const { scriptHex, scriptHash } = mapAddressToScriptHash( addressStr )
       const unspent = await ecl.blockchainScripthash_listunspent( scriptHash )
 
       for ( const utxo of unspent ) {
@@ -89,13 +91,30 @@ describe('ElectrumClient', async () => {
 
         satoshiTotal += utxo.value
         count++
-        if (satoshiTotal > (amount + (192 * count) / 1000) && count > 3) {
+        if ( satoshiTotal > ( amount + ( 192 * count ) / 1000 ) && count > 3 ) {
           break
         }
       }
     }
 
-    console.log(utxos.length, satoshiTotal, amount, utxos)
-    assert.isArray(utxos)
-  }).timeout(1500000)
-})
+    console.log( utxos.length, satoshiTotal, amount, utxos )
+    assert.isArray( utxos )
+  } ).timeout( 1500000 )
+
+
+  it( 'subscribe headers', async () => {
+    const electrum = new ElectrumPool()
+    const ecl = await electrum.acquire()
+    const listner = ( result ) => {
+      console.log( this, result )
+    }
+    ecl.subscribe.on( 'blockchain.headers.subscribe', listner, this )
+
+    const result = await ecl.blockchainHeaders_subscribe()
+    console.log( result )
+    assert.isObject( ecl )
+
+    await sleep(150000)
+  } ).timeout( 1500000 )
+
+} )

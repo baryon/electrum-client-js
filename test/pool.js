@@ -25,39 +25,39 @@ class ElectrumPool extends EventEmitter {
     try {
       const ecl = this._fetchServerFromPool()
 
-      ecl.onConnect = async () => {
+      ecl.on( 'connect', async () => {
         // https://electrumx.readthedocs.io/en/latest/protocol-methods.html#server-peers-subscribe
         const peers = await ecl.serverPeers_subscribe()
         const servers = this._parsePeers( peers )
 
         this._initServers( servers )
 
-        // console.log( peers )
-        // console.log( servers )
-        // console.log( _.map( this.servers, ( server ) => {
-        //   return [ server.host, server.port, server._protocol ]
-        // } ))
+        console.log( peers )
+        console.log( servers )
+        console.log( _.map( this.servers, ( server ) => {
+          return [ server.host, server.port, server._protocol ]
+        } ))
 
         this.emit( 'connect', ecl )
-      }
+      } )
 
-      ecl.onClose = () => {
-        // console.log( 'close event', ecl.host, ecl.port, ecl.protocol, ecl.status )
+      ecl.on( 'close', () => {
+        console.log( 'close event', ecl.host, ecl.port, ecl.protocol, ecl.status )
 
         this.emit( 'close', ecl )
-      }
+      } )
 
-      ecl.onEnd = ( error ) => {
-        // console.log( 'end event', ecl.host, ecl.port, ecl.protocol, ecl.status )
+      ecl.on( 'end', ( error ) => {
+        console.log( 'end event', ecl.host, ecl.port, ecl.protocol, ecl.status )
 
         this.emit( 'end', ecl, error )
-      }
+      } )
 
-      ecl.onError = ( error ) => {
-        // console.log( `onError: [${error}]`, error.status, error.message, ecl.host, ecl.port, ecl.protocol, ecl.status )
+      ecl.on( 'error', ( error ) => {
+        console.log( `onError: [${error}]`, error.status, error.message, ecl.host, ecl.port, ecl.protocol, ecl.status )
         this._nextServerIndex()
         this.emit( 'error', ecl, error )
-      }
+      } )
 
       await ecl.connect()
       return ecl
@@ -131,24 +131,24 @@ class ElectrumPool extends EventEmitter {
 
   _initServers ( servers ) {
     _.each( servers, ( value, host ) => {
-      if (value.s) {
+      if ( value.s ) {
         const key = `${host}_tls`
-
-        const existServer = this.serversMap[key]
-        if (existServer === undefined) {
-          this.serversMap[key] = new ElectrumCli(value.s, host, 'tls')
-          this.servers.push(this.serversMap[key])
-        }
-      }
-      if ( value.t ) {
-        const key = `${host}_tcp`
 
         const existServer = this.serversMap[ key ]
         if ( existServer === undefined ) {
-          this.serversMap[ key ] = new ElectrumCli( value.t, host, 'tcp' )
+          this.serversMap[ key ] = new ElectrumCli( value.s, host, 'tls' )
           this.servers.push( this.serversMap[ key ] )
         }
       }
+      // if ( value.t ) {
+      //   const key = `${host}_tcp`
+
+      //   const existServer = this.serversMap[ key ]
+      //   if ( existServer === undefined ) {
+      //     this.serversMap[ key ] = new ElectrumCli( value.t, host, 'tcp' )
+      //     this.servers.push( this.serversMap[ key ] )
+      //   }
+      // }
     } )
   }
 }
