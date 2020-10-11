@@ -12,7 +12,7 @@ class ElectrumClient extends Client {
     this.timeLastCall = 0;
   }
 
-  initElectrum(electrumConfig, persistencePolicy = { maxRetry: 1000, callback: null }) {
+  initElectrum(electrumConfig = {}, persistencePolicy = { maxRetry: 1000, callback: null }) {
     this.persistencePolicy = persistencePolicy;
     this.electrumConfig = electrumConfig;
     this.timeLastCall = 0;
@@ -47,13 +47,13 @@ class ElectrumClient extends Client {
     ];
     list.forEach(event => this.subscribe.removeAllListeners(event));
     setTimeout(() => {
-      if (this.persistencePolicy != null && this.persistencePolicy.maxRetry > 0) {
+      if (this.persistencePolicy && this.persistencePolicy.maxRetry > 0) {
         this.reconnect();
         this.persistencePolicy.maxRetry -= 1;
-      } else if (this.persistencePolicy != null && this.persistencePolicy.callback != null) {
+      } else if (this.persistencePolicy && this.persistencePolicy.callback != null) {
         this.persistencePolicy.callback();
-      } else if (this.persistencePolicy == null) {
-        this.reconnect();
+      } else {
+        //do nothing
       }
     }, 10000);
   }

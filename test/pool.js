@@ -59,7 +59,13 @@ class ElectrumPool extends EventEmitter {
         this.emit( 'error', ecl, error )
       } )
 
-      await ecl.connect()
+      ecl.initElectrum({}, null).then(version=>{
+        console.log(version)
+      }).catch(e=>{
+        console.warn(e)
+        this._nextServerIndex()
+        this.emit( 'error', ecl, error )
+      })
       return ecl
     } catch ( e ) {
       this._nextServerIndex()
@@ -140,15 +146,15 @@ class ElectrumPool extends EventEmitter {
           this.servers.push( this.serversMap[ key ] )
         }
       }
-      // if ( value.t ) {
-      //   const key = `${host}_tcp`
+      if ( value.t ) {
+        const key = `${host}_tcp`
 
-      //   const existServer = this.serversMap[ key ]
-      //   if ( existServer === undefined ) {
-      //     this.serversMap[ key ] = new ElectrumCli( value.t, host, 'tcp' )
-      //     this.servers.push( this.serversMap[ key ] )
-      //   }
-      // }
+        const existServer = this.serversMap[ key ]
+        if ( existServer === undefined ) {
+          this.serversMap[ key ] = new ElectrumCli( value.t, host, 'tcp' )
+          this.servers.push( this.serversMap[ key ] )
+        }
+      }
     } )
   }
 }
