@@ -16,7 +16,7 @@ class ElectrumClient extends Client {
     this.persistencePolicy = persistencePolicy;
     this.electrumConfig = electrumConfig;
     this.timeLastCall = 0;
-    return this.connect().then(() => this.server_version(this.electrumConfig.client, this.electrumConfig.version));
+    return this.connect();
   }
 
   // Override parent
