@@ -64,7 +64,7 @@ class ElectrumPool extends EventEmitter {
       }).catch(e=>{
         console.warn(e)
         this._nextServerIndex()
-        this.emit( 'error', ecl, error )
+        this.emit( 'error', ecl, e )
       })
       return ecl
     } catch ( e ) {
