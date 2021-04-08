@@ -117,4 +117,14 @@ describe( 'ElectrumClient', async () => {
     await sleep(150000)
   } ).timeout( 1500000 )
 
+
+  it( 'blockHeight', async () => {
+    const electrum = new ElectrumPool()
+    const ecl = await electrum.acquire()
+    
+    const result = await ecl.blockchainBlock_header( 575191, 575192 )
+    console.log( result )
+    assert.isObject( result );
+  } ).timeout( 300000 )
+
 } )
