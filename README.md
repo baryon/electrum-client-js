@@ -17,7 +17,7 @@ Electrum Protocol Client for Bitcoin SV
 
 ## protocol spec
 
-* https://electrumx.readthedocs.io/en/latest/PROTOCOL.html
+* https://electrumx.readthedocs.io/en/latest/index.html
 
 ## usage
 

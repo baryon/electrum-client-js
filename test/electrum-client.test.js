@@ -127,4 +127,23 @@ describe( 'ElectrumClient', async () => {
     assert.isObject( result );
   } ).timeout( 300000 )
 
+  it( 'subscribe scripthash', async () => {
+    const electrum = new ElectrumPool()
+    const ecl = await electrum.acquire()
+    const listner = ( result ) => {
+      console.log( this, result )
+    }
+    ecl.subscribe.on( 'blockchain.scripthash.subscribe', listner, this )
+
+    const address = '1Twetcht1cTUxpdDoX5HQRpoXeuupAdyf'
+    const { scriptHash } = mapAddressToScriptHash(address);
+
+    ecl.blockchainScripthash_subscribe(scriptHash).then(result =>{
+      console.log(result)
+    }).catch(e=>{
+      console.log(e)
+    })
+
+    await sleep(150000)
+  } ).timeout( 1500000 )
 } )
