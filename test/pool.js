@@ -1,39 +1,32 @@
 const _ = require( 'lodash' )
+const { mapAddressToScriptHash } = require( './address' )
 
 const { EventEmitter } = require( 'events' )
 
-const servers = require( './servers' )
 
 const ElectrumCli = require( '../index' )
 
 class ElectrumPool extends EventEmitter {
   // 初始化服务器池
-  constructor () {
+  constructor (network, hosts) {
     super()
-    this.serverIndex = 0
+    this.network = network
+    this.currentServerIndex = 0
+    this.serversMap = new Map()
     this.servers = []
-    this.serversMap = {}
-    this.init()
+    this._initHosts(new Map(Object.entries(hosts)));
   }
 
-  init () {
-    this._initServers( servers )
-    return this
-  }
-
-  async acquire () {
-    try {
-      const ecl = this._fetchServerFromPool()
+  connect(ecl) {
 
       ecl.on( 'connect', async () => {
         // https://electrumx.readthedocs.io/en/latest/protocol-methods.html#server-peers-subscribe
-        const peers = await ecl.serverPeers_subscribe()
-        const servers = this._parsePeers( peers )
+        const hostServers = await ecl.serverPeers_subscribe()
+        const peerHosts = this._parseHosts(hostServers);
+        this._initHosts(new Map(Object.entries(peerHosts)));
 
-        this._initServers( servers )
-
-        console.log( peers )
-        console.log( servers )
+        console.log( hostServers )
+        console.log( peerHosts )
         console.log( _.map( this.servers, ( server ) => {
           return [ server.host, server.port, server._protocol ]
         } ))
@@ -59,18 +52,20 @@ class ElectrumPool extends EventEmitter {
         this.emit( 'error', ecl, error )
       } )
 
-      ecl.initElectrum({}, null).then(version=>{
-        console.log(version)
-      }).catch(e=>{
-        console.warn(e)
-        this._nextServerIndex()
-        this.emit( 'error', ecl, e )
-      })
-      return ecl
-    } catch ( e ) {
-      this._nextServerIndex()
-      return Promise.reject( e )
+      return ecl.initElectrum({}, null)
+  }
+
+  async acquire() {
+    for (let index = this.currentServerIndex; index < this.currentServerIndex + this.servers.length; index++) {
+      const ecl = this.servers[index % this.servers.length];
+      try {
+        return await this.connect(ecl);
+      } catch (e) {
+        console.log(e);
+      }
     }
+    //没有可用的服务器
+    return Promise.reject(new Error('NoElectrumServer'));
   }
 
   closeAll () {
@@ -82,80 +77,86 @@ class ElectrumPool extends EventEmitter {
   /// ////////////////////////////////
 
   _nextServerIndex () {
-    this.serverIndex = ( 1 + this.serverIndex ) % this.servers.length
+    this.serverIndex = ( ++this.serverIndex ) % this.servers.length
   }
 
-  _fetchServerFromPool () {
-    const ecl = this.servers[ this.serverIndex ]
-    console.debug( this.serverIndex, ecl.host, ecl.port, ecl._protocol, ecl.status )
-    return ecl
-  }
-
-  _parsePeers ( peers ) {
+  _parseHosts(hostServers) {
     // https://electrumx.readthedocs.io/en/latest/protocol-methods.html#server-peers-subscribe
-    const servers = {}
-    _.each( peers, ( value ) => {
-      //const host = value[0]
-      const host = value[ 1 ]
-      const params = value[ 2 ]
-      let version = '1.4'
-      let s = ''
-      let t = ''
-      let pruning = '-'
-      _.each( params, ( param ) => {
-        const prefix = param.substr( 0, 1 )
-        const surfix = param.substr( 1 )
-        switch ( prefix ) {
+    const result = {};
+    _.each(hostServers, (value) => {
+      const host = value[1];
+      const params = value[2];
+      let version = '1.4';
+      let s = '';
+      let t = '';
+      let pruning = '-';
+      _.each(params, (param) => {
+        if (!param) return;
+        const prefix = param.substr(0, 1);
+        const surfix = param.substr(1);
+        switch (prefix) {
           case 'v':
-            version = surfix
-            break
+            version = surfix;
+            break;
           case 's':
-            s = surfix
-            break
+            s = surfix;
+            break;
           case 't':
-            t = surfix
-            break
+            t = surfix;
+            break;
           case 'p':
-            pruning = surfix
-            break
+            pruning = surfix;
+            break;
         }
-      } )
-      if ( host ) {
-        servers[ host ] = {
-          pruning, version
+      });
+      if (host) {
+        result[host] = {
+          pruning,
+          version,
+        };
+        if (s !== '') {
+          result[host].s = s;
         }
-        if ( s !== '' ) {
-          servers[ host ].s = s
-        }
-        if ( t !== '' ) {
-          servers[ host ].t = t
+        if (t !== '') {
+          result[host].t = t;
         }
       }
-    } )
-    return servers
+    });
+    return result;
   }
 
-  _initServers ( servers ) {
-    _.each( servers, ( value, host ) => {
-      if ( value.s ) {
-        const key = `${host}_tls`
+  _initHosts(hosts) {
+    for (const [host, value] of hosts.entries()) {
+      if (value.s) {
+        const key = `${host}_tls`;
 
-        const existServer = this.serversMap[ key ]
-        if ( existServer === undefined ) {
-          this.serversMap[ key ] = new ElectrumCli( value.s, host, 'tls' )
-          this.servers.push( this.serversMap[ key ] )
+        if (!this.serversMap.has(key)) {
+          this.serversMap.set(key, new ElectrumCli(value.s, host, 'tls'));
+          const ecl = this.serversMap.get(key)
+          this.servers.push(ecl ? ecl : new ElectrumCli());
         }
       }
-      if ( value.t ) {
-        const key = `${host}_tcp`
+      if (value.t) {
+        const key = `${host}_tcp`;
 
-        const existServer = this.serversMap[ key ]
-        if ( existServer === undefined ) {
-          this.serversMap[ key ] = new ElectrumCli( value.t, host, 'tcp' )
-          this.servers.push( this.serversMap[ key ] )
+        if (!this.serversMap.has(key)) {
+          this.serversMap.set(key, new ElectrumCli(value.t, host, 'tcp'));
+          const ecl = this.serversMap.get(key)
+          this.servers.push(ecl ? ecl : new ElectrumCli());
         }
       }
-    } )
+    }
+  }
+
+  balance(walletAddressStr) {
+    const { scriptHash } = mapAddressToScriptHash(walletAddressStr, this.network);
+    return this.acquire().then((ecl) => {
+      console.log('connected', ecl.host, ecl.port, ecl.protocol, ecl.status);
+      return ecl.blockchainScripthash_getBalance(scriptHash);
+    }).catch(e=>{
+      console.log("AAAAAA",e)
+      throw e
+    });
   }
 }
 

@@ -1,7 +1,7 @@
 const bsv = require('bsv')
 
-const mapAddressToScriptHash = ( address ) => {
-  const bsvAddress = bsv.Address.fromString( address )
+const mapAddressToScriptHash = ( address, network ) => {
+  const bsvAddress = bsv.Address.fromString( address, network )
   const script = bsv.Script.fromAddress( bsvAddress )
   // 获取ASM脚本
   // OP_DUP OP_HASH160 2d71a93e40de14da35e1c514bc917869de3cbc6e OP_EQUALVERIFY OP_CHECKSIG

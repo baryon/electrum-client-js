@@ -1,4 +1,3 @@
-const { mapAddressToScriptHash } = require( './address' )
 const ElectrumPool = require( './pool' )
 
 require( 'mocha' )
@@ -6,12 +5,15 @@ const assert = require( 'chai' ).assert
 
 const sleep = ( ms ) => new Promise( ( resolve, _ ) => setTimeout( () => resolve(), ms ) )
 
+const servers = require( './servers' )
+const testServers = require( './testnet' )
+
 describe( 'ElectrumClient', async () => {
   beforeEach( async () => {
 
   } )
   it( 'init', async () => {
-    const electrum = new ElectrumPool()
+    const electrum = new ElectrumPool('livenet', servers)
     const ecl = await electrum.acquire()
     const banner = await ecl.server_banner()
     console.log( banner )
@@ -19,19 +21,32 @@ describe( 'ElectrumClient', async () => {
   } )
 
   it( 'Ecl Balance', async () => {
-    const electrum = new ElectrumPool()
-    const ecl = await electrum.acquire()
+    const electrum = new ElectrumPool('livenet', servers)
     const address = '1Pwmd4RCoTbYP6tLWVoDcys1GW5chsve8C' //'1JQtjapAbhUVdBBFH1Z7dsE8gGgnxVDxRH'
     try {
-      const { scriptHash } = mapAddressToScriptHash( address )
-      const balance = await ecl.blockchainScripthash_getBalance( scriptHash )
+      const balance = await electrum.balance( address )
       console.log( balance )
+      assert.isObject( balance )
     } catch ( e ) {
       console.debug( e )
     }
 
-    assert.isObject( ecl )
   } )
+
+  it( 'Ecl Balance on Testnet', async () => {
+    const electrum = new ElectrumPool('testnet', testServers)
+    const address = 'mzSapriEs1aD8vFJ9T5uzMPCrDGAuDHmrf' //'1JQtjapAbhUVdBBFH1Z7dsE8gGgnxVDxRH'
+    try {
+      const balance = await electrum.balance( address ).catch(e=>{
+        console.debug( "asdhasdkjahdjkash", e )
+      })
+      console.log( "balance", balance )
+      //assert.isObject( balance )
+    } catch ( e ) {
+      console.debug( e )
+    }
+
+  } ).timeout(500000)
 
   it( 'fetchHistories', async () => {
     const electrum = new ElectrumPool()
@@ -39,7 +54,9 @@ describe( 'ElectrumClient', async () => {
     const addressStr = '1JQtjapAbhUVdBBFH1Z7dsE8gGgnxVDxRH'// '1LoqTWSXrd7D5yv8vKfk5onnFuVJbph74n' //
     try {
       const { scriptHash } = mapAddressToScriptHash( addressStr )
-      const histories = await ecl.blockchainScripthash_getHistory( scriptHash )
+      const histories = await ecl.blockchainScripthash_getHistory( scriptHash ).catch(e=>{
+        console.debug( "asdhasdkjahdjkash", e )
+      })
       console.log( histories.length, histories )
     } catch ( e ) {
       console.debug( e )
