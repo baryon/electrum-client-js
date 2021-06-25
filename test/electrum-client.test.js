@@ -1,12 +1,14 @@
 const ElectrumPool = require( './pool' )
-
+const console = require('tracer').console()
 require( 'mocha' )
 const assert = require( 'chai' ).assert
 
 const sleep = ( ms ) => new Promise( ( resolve, _ ) => setTimeout( () => resolve(), ms ) )
 
-const servers = require( './servers' )
-const testServers = require( './testnet' )
+const servers = require( './local' )
+// const testServers = require( './testnet' )
+
+const { mapAddressToScriptHash} = require('./address')
 
 describe( 'ElectrumClient', async () => {
   beforeEach( async () => {
@@ -18,7 +20,7 @@ describe( 'ElectrumClient', async () => {
     const banner = await ecl.server_banner()
     console.log( banner )
     assert.isObject( ecl )
-  } )
+  } ).timeout( 1500000 )
 
   it( 'Ecl Balance', async () => {
     const electrum = new ElectrumPool('livenet', servers)
@@ -31,25 +33,25 @@ describe( 'ElectrumClient', async () => {
       console.debug( e )
     }
 
-  } )
+  } ).timeout( 1500000 )
 
-  it( 'Ecl Balance on Testnet', async () => {
-    const electrum = new ElectrumPool('testnet', testServers)
-    const address = 'mzSapriEs1aD8vFJ9T5uzMPCrDGAuDHmrf' //'1JQtjapAbhUVdBBFH1Z7dsE8gGgnxVDxRH'
-    try {
-      const balance = await electrum.balance( address ).catch(e=>{
-        console.debug( "asdhasdkjahdjkash", e )
-      })
-      console.log( "balance", balance )
-      //assert.isObject( balance )
-    } catch ( e ) {
-      console.debug( e )
-    }
+  // it( 'Ecl Balance on Testnet', async () => {
+  //   const electrum = new ElectrumPool('testnet', testServers)
+  //   const address = 'mzSapriEs1aD8vFJ9T5uzMPCrDGAuDHmrf' //'1JQtjapAbhUVdBBFH1Z7dsE8gGgnxVDxRH'
+  //   try {
+  //     const balance = await electrum.balance( address ).catch(e=>{
+  //       console.debug( "asdhasdkjahdjkash", e )
+  //     })
+  //     console.log( "balance", balance )
+  //     //assert.isObject( balance )
+  //   } catch ( e ) {
+  //     console.debug( e )
+  //   }
 
-  } ).timeout(500000)
+  // } ).timeout(500000)
 
   it( 'fetchHistories', async () => {
-    const electrum = new ElectrumPool()
+    const electrum = new ElectrumPool('livenet', servers)
     const ecl = await electrum.acquire()
     const addressStr = '1JQtjapAbhUVdBBFH1Z7dsE8gGgnxVDxRH'// '1LoqTWSXrd7D5yv8vKfk5onnFuVJbph74n' //
     try {
@@ -66,11 +68,11 @@ describe( 'ElectrumClient', async () => {
   } ).timeout( 1500000 )
 
   it( 'fetchRawTx', async () => {
-    const electrum = new ElectrumPool()
+    const electrum = new ElectrumPool('livenet', servers)
     const ecl = await electrum.acquire()
     const txHash = 'a3d9bb5a9d26c15fa5356fe6ea555e7ae4a7262bee485464c9625a0e64028c7f'
     const txObject = await ecl.blockchainTransaction_get( txHash )
-    console.log( txObject )
+    //console.log( txObject )
     assert.isString( txObject )
   } ).timeout( 1500000 )
 
@@ -84,7 +86,7 @@ describe( 'ElectrumClient', async () => {
   // })
 
   it( 'selectUtxos', async () => {
-    const electrum = new ElectrumPool()
+    const electrum = new ElectrumPool('livenet', servers)
     const ecl = await electrum.acquire()
 
     const utxos = []
@@ -96,6 +98,7 @@ describe( 'ElectrumClient', async () => {
     for ( const addressStr of addressList ) {
       const { scriptHex, scriptHash } = mapAddressToScriptHash( addressStr )
       const unspent = await ecl.blockchainScripthash_listunspent( scriptHash )
+      console.log(unspent)
 
       for ( const utxo of unspent ) {
         utxos.push( {
@@ -120,7 +123,7 @@ describe( 'ElectrumClient', async () => {
 
 
   it( 'subscribe headers', async () => {
-    const electrum = new ElectrumPool()
+    const electrum = new ElectrumPool('livenet', servers)
     const ecl = await electrum.acquire()
     const listner = ( result ) => {
       console.log( this, result )
@@ -136,7 +139,7 @@ describe( 'ElectrumClient', async () => {
 
 
   it( 'blockHeight', async () => {
-    const electrum = new ElectrumPool()
+    const electrum = new ElectrumPool('livenet', servers)
     const ecl = await electrum.acquire()
     
     const result = await ecl.blockchainBlock_header( 575191, 575192 )
@@ -145,7 +148,7 @@ describe( 'ElectrumClient', async () => {
   } ).timeout( 300000 )
 
   it( 'subscribe scripthash', async () => {
-    const electrum = new ElectrumPool()
+    const electrum = new ElectrumPool('livenet', servers)
     const ecl = await electrum.acquire()
     const listner = ( result ) => {
       console.log( this, result )

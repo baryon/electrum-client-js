@@ -59,6 +59,7 @@ class ElectrumPool extends EventEmitter {
     for (let index = this.currentServerIndex; index < this.currentServerIndex + this.servers.length; index++) {
       const ecl = this.servers[index % this.servers.length];
       try {
+        console.log(ecl.host, ecl.port)
         return await this.connect(ecl);
       } catch (e) {
         console.log(e);
